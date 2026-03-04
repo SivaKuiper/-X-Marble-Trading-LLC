@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 /* ═══════════════════════════════════════════════════════════════
    X MARBLES TRADING LLC — Operations Platform v2.1
@@ -460,7 +460,7 @@ function Dashboard() {
         <div style={{fontSize:13,fontWeight:700,color:C.text,marginBottom:12}}>Incoming Shipments</div>
         <Tbl headers={["Shipment","Material","Thickness","Sqm","Vessel","ETA","Terms","Yard","Status","Value"]}
           rows={SHIPMENTS.map(sh=>{
-            const sc2 = {"In Transit":C.blue,"Loading":C.amber,"Confirmed":C.green,"PO Placed":C.purple}[sh.status]||C.textMuted;
+            
             return <TR key={sh.id} cells={[
               <Tag color={C.gold} text={sh.id}/>, sh.mat, `${sh.thk}mm`, sh.sqm+" sqm", sh.vessel,
               <span style={{color:C.blue,fontWeight:600}}>{sh.eta}</span>,
@@ -715,7 +715,7 @@ function Procurement() {
           <Card style={{padding:0}}>
             <Tbl headers={["PO#","Supplier","Material","Thickness","Sqm","Vessel","BL","ETD","ETA","Terms","Yard","Status","Value"]}
               rows={SHIPMENTS.map(sh=>{
-                const sc2 = {"In Transit":C.blue,"Loading":C.amber,"Confirmed":C.green,"PO Placed":C.purple}[sh.status]||C.textMuted;
+                
                 return <TR key={sh.id} cells={[
                   <Tag color={C.gold} text={sh.po}/>,
                   <span style={{fontSize:11}}>{sh.sup}</span>,
@@ -933,7 +933,7 @@ function Inventory() {
           </div>
           <Tbl headers={["ID","PO","Material","Thickness","Sqm","Vessel","BL","ETD","ETA","Terms","Yard","Status","Value"]}
             rows={SHIPMENTS.map(sh=>{
-              const sc2 = {"In Transit":C.blue,"Loading":C.amber,"Confirmed":C.green,"PO Placed":C.purple}[sh.status]||C.textMuted;
+              
               return <TR key={sh.id} cells={[<Tag color={C.gold} text={sh.id}/>,<Tag color={C.goldDim} text={sh.po}/>,sh.mat,`${sh.thk}mm`,sh.sqm+" sqm",sh.vessel,<span style={{fontSize:10,color:C.textMuted}}>{sh.bl}</span>,sh.etd,<span style={{color:C.blue,fontWeight:600}}>{sh.eta}</span>,<Tag color={C.teal} text={sh.terms}/>,YARDS.find(y=>y.id===sh.yard)?.name.split(" ")[0],<Dot status={sh.status}/>,<span style={{color:C.gold,fontWeight:600}}>AED {fmt(sh.val)}</span>]}/>;
             })}/>
         </Card>
