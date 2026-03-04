@@ -680,31 +680,126 @@ function Procurement() {
         </div>
       )}
 
-      {tab==="compare" && (
-        <Card style={{padding:0}}>
-          <Tbl headers={["Material","Type","Origin","Thickness","Size","Finish","Quality","FOB/sqm","Supplier","Terms","Lead"]}
-            rows={[
-              ["Absolute Black Granite","Granite","India","20mm","280×140","Polished","Premium",38,"Raj Granites","FOB",25],
-              ["Absolute Black Granite","Granite","India","18mm","260×130","Honed","Premium",34,"Raj Granites","FOB",25],
-              ["Bianco Carrara Marble","Marble","Italy","20mm","280×140","Polished","Luxury",72,"Quarella SpA","CIF",45],
-              ["Calacatta Gold Marble","Marble","Italy","20mm","280×140","Polished","Ultra Luxury",145,"Quarella SpA","CIF",45],
-              ["Turkish Travertine","Limestone","Turkey","20mm","60×60","Honed/Filled","Mid-Range",22,"Marmara Taş","FOB",20],
-              ["Desert Gold Limestone","Limestone","Egypt","20mm","60×40","Honed","Mid-Range",25,"Natural Stone Egypt","FOB",18],
-              ["Nero Marquina Marble","Marble","Spain","20mm","260×130","Polished","Premium",88,"Granitos Extremadura","DAP",40],
-              ["Azul Macaubas Quartzite","Quartzite","Brazil","20mm","260×130","Polished","Ultra Luxury",220,"Brazil Stone Co.","CIF",55],
-            ].map((r,i)=>{
-              const tc = {Granite:C.gold,Marble:C.blue,Limestone:C.amber,Quartzite:C.teal}[r[1]];
-              return <TR key={i} cells={[
-                <span style={{fontWeight:600,fontSize:12}}>{r[0]}</span>,
-                <Tag color={tc} text={r[1]}/>,
-                r[2],r[3],r[4],r[5],
-                <Tag color={r[6]==="Ultra Luxury"?C.purple:r[6]==="Luxury"?C.blue:r[6]==="Premium"?C.gold:C.textMuted} text={r[6]}/>,
-                <span style={{color:C.gold,fontWeight:700}}>${r[7]}</span>,
-                r[8],<Tag color={C.teal} text={r[9]}/>,r[10]+"d"
-              ]}/>;
-            })}/>
-        </Card>
-      )}
+      {tab==="compare" && (()=>{
+        const CDATA = [
+          {mat:"Absolute Black Granite",type:"Granite",thk:"20mm",fin:"Polished",quotes:[
+            {sup:"Raj Granites",loc:"Ongole, India",fob:38,terms:"FOB",lead:25,rating:4.8,ontime:94,moq:100,shade:"A",remark:"Consistent quality · Regular supplier · Best bulk rate",rec:true},
+            {sup:"Bhandari Marble",loc:"Kishangarh, India",fob:42,terms:"FOB",lead:30,rating:4.3,ontime:85,moq:80,shade:"A+",remark:"Premium shade A+ · Slightly higher · Good for luxury projects",rec:false},
+            {sup:"Granitos Extremadura",loc:"Spain",fob:51,terms:"DAP",lead:42,rating:4.6,ontime:91,moq:50,shade:"A",remark:"DAP included — no freight surprise · Slower lead time",rec:false},
+          ]},
+          {mat:"Bianco Carrara Marble",type:"Marble",thk:"18mm",fin:"Polished",quotes:[
+            {sup:"Quarella SpA",loc:"Verona, Italy",fob:72,terms:"CIF",lead:45,rating:4.9,ontime:96,moq:60,shade:"B+",remark:"Best Italian quality · CIF to Jebel Ali · Top choice for Emaar",rec:true},
+            {sup:"Granitos Extremadura",loc:"Spain",fob:68,terms:"FOB",lead:40,rating:4.6,ontime:91,moq:50,shade:"A",remark:"Spanish equivalent · Lower price · Add freight separately",rec:false},
+            {sup:"Marmara Tas",loc:"Turkey",fob:58,terms:"FOB",lead:22,rating:4.3,ontime:85,moq:40,shade:"B",remark:"Budget option · Shade B — not for ultra-luxury · Fast lead",rec:false},
+          ]},
+          {mat:"Calacatta Gold Marble",type:"Marble",thk:"20mm",fin:"Polished",quotes:[
+            {sup:"Quarella SpA",loc:"Verona, Italy",fob:145,terms:"CIF",lead:45,rating:4.9,ontime:96,moq:30,shade:"A+",remark:"Authentic Calacatta · Only reliable A+ source · No compromise",rec:true},
+            {sup:"Bhandari Marble",loc:"Kishangarh, India",fob:118,terms:"FOB",lead:30,rating:4.3,ontime:85,moq:25,shade:"A",remark:"Indian equivalent — not true Calacatta · Lower price",rec:false},
+          ]},
+          {mat:"Turkish Travertine",type:"Limestone",thk:"20mm",fin:"Honed/Filled",quotes:[
+            {sup:"Marmara Tas",loc:"Istanbul, Turkey",fob:22,terms:"FOB",lead:20,rating:4.3,ontime:85,moq:200,shade:"A",remark:"Direct quarry source · Best market price · Consistent fill",rec:true},
+            {sup:"Natural Stone Egypt",loc:"Cairo, Egypt",fob:20,terms:"FOB",lead:18,rating:4.1,ontime:82,moq:150,shade:"B",remark:"Cheapest but shade B · Good for outdoor/back-of-house only",rec:false},
+          ]},
+          {mat:"Azul Macaubas Quartzite",type:"Quartzite",thk:"20mm",fin:"Polished",quotes:[
+            {sup:"Brazil Stone Co.",loc:"Sao Paulo, Brazil",fob:220,terms:"CIF",lead:55,rating:4.7,ontime:88,moq:20,shade:"A+",remark:"Exclusive source · Long lead · Book 8 weeks ahead for large projects",rec:true},
+          ]},
+        ];
+        const [selMat,setSelMat] = useState(CDATA[0].mat);
+        const group = CDATA.find(g=>g.mat===selMat)||CDATA[0];
+        const prices = group.quotes.map(q=>q.fob);
+        const minP = Math.min(...prices), maxP = Math.max(...prices);
+        const typeColor = {Granite:C.gold,Marble:C.blue,Limestone:C.amber,Quartzite:C.teal}[group.type]||C.textMuted;
+        const sColor = sc(group.mat);
+        return (
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              {CDATA.map(g=>{
+                const tc={Granite:C.gold,Marble:C.blue,Limestone:C.amber,Quartzite:C.teal}[g.type]||C.textMuted;
+                const active=g.mat===selMat;
+                return (<button key={g.mat} onClick={()=>setSelMat(g.mat)} style={{padding:"7px 13px",borderRadius:10,border:`1px solid ${active?tc:C.border}`,cursor:"pointer",background:active?tc+"22":C.card,color:active?tc:C.textMuted,fontSize:11,fontFamily:"inherit",fontWeight:active?700:400,display:"flex",alignItems:"center",gap:6}}>
+                  <div style={{width:9,height:9,borderRadius:2,background:sc(g.mat).bg,border:`1px solid ${sc(g.mat).vein}`,flexShrink:0}}/>{g.mat.split(" ").slice(0,2).join(" ")} {g.thk}
+                </button>);
+              })}
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:16,padding:"14px 18px",background:sColor.bg,borderRadius:12,border:`1px solid ${C.border}`}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:18,fontWeight:700,color:sColor.vein,fontFamily:"'DM Serif Display',serif"}}>{group.mat}</div>
+                <div style={{fontSize:11,color:sColor.txt,marginTop:3}}>{group.thk} · {group.fin} · {group.quotes.length} supplier quote{group.quotes.length>1?"s":""} compared</div>
+              </div>
+              <Tag color={typeColor} text={group.type}/>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:10,color:sColor.txt,textTransform:"uppercase",letterSpacing:0.5}}>Price range</div>
+                <div style={{fontSize:16,fontWeight:800,color:sColor.vein}}>${minP}{minP!==maxP?` – $${maxP}`:""}<span style={{fontSize:10,fontWeight:400}}>/sqm FOB</span></div>
+              </div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {group.quotes.map((q,i)=>{
+                const pctBar=maxP===minP?100:Math.round(((q.fob-minP)/(maxP-minP))*100);
+                const isBest=q.fob===minP, isMost=q.fob===maxP;
+                return (
+                  <Card key={i} style={{border:`1px solid ${q.rec?C.gold+"66":C.border}`,background:q.rec?"linear-gradient(135deg,#16140a,#18181b)":C.card}}>
+                    <div style={{display:"flex",gap:14,alignItems:"flex-start"}}>
+                      <div style={{width:38,minWidth:38,height:38,borderRadius:10,background:q.rec?C.gold:C.border,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:q.rec?"#0a0a0a":C.textDim,flexShrink:0}}>{i+1}</div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6,flexWrap:"wrap",gap:6}}>
+                          <div>
+                            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                              <span style={{fontSize:14,fontWeight:700,color:C.text}}>{q.sup}</span>
+                              {q.rec&&<Tag color={C.gold} text="Recommended"/>}
+                              {isBest&&!q.rec&&<Tag color={C.green} text="Best Price"/>}
+                            </div>
+                            <div style={{fontSize:11,color:C.textMuted,marginTop:2}}>{q.loc}</div>
+                          </div>
+                          <div style={{textAlign:"right"}}>
+                            <div style={{fontSize:22,fontWeight:800,color:isBest?C.green:isMost?C.red:C.gold,fontFamily:"'DM Serif Display',serif"}}>${q.fob}<span style={{fontSize:11,fontWeight:400,color:C.textMuted}}>/sqm</span></div>
+                            <div style={{fontSize:10,color:C.textDim}}>AED {fmt(q.fob*3.672,2)}/sqm</div>
+                          </div>
+                        </div>
+                        <div style={{marginBottom:10}}>
+                          <div style={{background:C.border,borderRadius:99,height:6,overflow:"hidden"}}>
+                            <div style={{width:`${Math.max(pctBar,8)}%`,height:"100%",background:isBest?C.green:isMost?C.red:C.gold,borderRadius:99}}/>
+                          </div>
+                          <div style={{display:"flex",justifyContent:"space-between",marginTop:3,fontSize:9,color:C.textDim}}>
+                            <span>Cheapest ${minP}</span><span>Most expensive ${maxP}</span>
+                          </div>
+                        </div>
+                        <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:6,marginBottom:10}}>
+                          {[["Terms",<Tag key="t" color={C.teal} text={q.terms}/>],["Lead",q.lead+"d"],["MOQ",q.moq+" m²"],["Shade",q.shade],["Rating","★ "+q.rating],["On-Time",q.ontime+"%"]].map(([l,v])=>(
+                            <div key={l} style={{background:"#0d0d0f",borderRadius:6,padding:"5px 8px",textAlign:"center"}}>
+                              <div style={{fontSize:8,color:C.textDim,textTransform:"uppercase",marginBottom:2}}>{l}</div>
+                              <div style={{fontSize:11,fontWeight:600,color:C.text}}>{v}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{padding:"7px 12px",background:q.rec?C.goldBg:C.border+"22",borderRadius:7,borderLeft:`3px solid ${q.rec?C.gold:C.borderLight}`,fontSize:11,color:q.rec?C.goldLight:C.textMuted,lineHeight:1.5}}>
+                          💬 {q.remark}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+            <Card style={{padding:0}}>
+              <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,fontSize:12,fontWeight:700,color:C.text}}>Side-by-Side Summary · {group.mat}</div>
+              <Tbl headers={["Supplier","FOB/sqm","AED/sqm","Terms","Lead","MOQ","Shade","Rating","On-Time","Remark"]}
+                rows={group.quotes.map((q,i)=>(
+                  <TR key={i} cells={[
+                    <span style={{fontWeight:700,color:q.rec?C.gold:C.text}}>{q.sup}{q.rec?" ★":""}</span>,
+                    <span style={{color:q.fob===minP?C.green:q.fob===maxP?C.red:C.gold,fontWeight:700}}>${q.fob}</span>,
+                    <span style={{color:C.textMuted}}>AED {fmt(q.fob*3.672,2)}</span>,
+                    <Tag color={C.teal} text={q.terms}/>,
+                    q.lead+"d", q.moq+" m²",
+                    <Tag color={q.shade==="A+"?C.purple:C.gold} text={q.shade}/>,
+                    <span style={{color:C.gold}}>★ {q.rating}</span>,
+                    <span style={{color:q.ontime>=90?C.green:C.amber}}>{q.ontime}%</span>,
+                    <span style={{fontSize:10,color:C.textMuted}}>{q.remark.split("·")[0].trim()}</span>
+                  ]}/>
+                ))}/>
+            </Card>
+          </div>
+        );
+      })()}
 
       {tab==="pos" && (
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
@@ -1105,7 +1200,191 @@ function Sales() {
   return (
     <div>
       <SH title="Sales Desk" sub="Project quotations · PDF export · VAT compliant · Shipping terms integrated"/>
-      <Tabs tabs={[{id:"quote",label:"Quote Builder",icon:"📝"},{id:"reqs",label:"Requirements",icon:"📊"},{id:"customers",label:"Customers",icon:"🤝"}]} active={tab} onChange={setTab}/>
+      <Tabs tabs={[{id:"kpi",label:"KPI Dashboard",icon:"📊"},{id:"quote",label:"Quote Builder",icon:"📝"},{id:"reqs",label:"Requirements",icon:"📋"},{id:"customers",label:"Customers",icon:"🤝"}]} active={tab} onChange={setTab}/>
+
+      {tab==="kpi" && (()=>{
+        const months=["Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
+        const revData=[2.1,3.4,2.8,4.2,3.9,5.1,4.6,6.2,6.7];
+        const tgtData=[3.0,3.0,3.5,3.5,4.0,4.0,4.5,4.5,5.0];
+        const gpData=[0.84,1.36,1.12,1.68,1.56,2.04,1.84,2.48,2.68];
+        const maxRev=Math.max(...revData,5);
+        const SVG_H=110, SVG_W=560;
+        const px=(i)=>24+(i*(SVG_W-48)/(months.length-1));
+        const py=(v)=>SVG_H-16-((v/maxRev)*(SVG_H-28));
+        const linePoints=(data)=>data.map((v,i)=>`${px(i)},${py(v)}`).join(" ");
+        const areaPoints=(data)=>`${px(0)},${SVG_H-16} ${linePoints(data)} ${px(data.length-1)},${SVG_H-16}`;
+
+        const revVsTarget=((revData[revData.length-1]/tgtData[tgtData.length-1])*100).toFixed(0);
+        const revVsLY=((revData[revData.length-1]/revData[0]-1)*100).toFixed(0);
+        const totalRev=revData.reduce((s,v)=>s+v,0);
+        const totalGP=gpData.reduce((s,v)=>s+v,0);
+        const gpPct=((totalGP/totalRev)*100).toFixed(1);
+
+        const BulletChart=({label,value,target,max,unit,color,note})=>{
+          const vPct=(value/max)*100, tPct=(target/max)*100;
+          return (
+            <Card style={{padding:"14px 18px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                <div><div style={{fontSize:13,fontWeight:700,color:C.text}}>{label}</div><div style={{fontSize:11,color:C.textMuted,marginTop:2}}>{note}</div></div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:20,fontWeight:800,color:color,fontFamily:"'DM Serif Display',serif"}}>{value}{unit}</div>
+                  <div style={{fontSize:10,color:C.textDim}}>Target: {target}{unit}</div>
+                </div>
+              </div>
+              <div style={{position:"relative",height:20,borderRadius:4,overflow:"hidden",background:"#0d0d0f"}}>
+                <div style={{position:"absolute",left:0,top:0,height:"100%",width:"100%",display:"flex"}}>
+                  <div style={{width:"33%",background:"#f8717122",borderRight:`1px solid ${C.border}`}}/>
+                  <div style={{width:"34%",background:"#fb923c22",borderRight:`1px solid ${C.border}`}}/>
+                  <div style={{width:"33%",background:"#4ade8022"}}/>
+                </div>
+                <div style={{position:"absolute",left:0,top:"25%",height:"50%",width:`${vPct}%`,background:color,borderRadius:3,transition:"width 1s"}}/>
+                <div style={{position:"absolute",top:0,left:`${tPct}%`,width:3,height:"100%",background:C.text,borderRadius:1,transform:"translateX(-50%)"}}/>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:4,fontSize:9,color:C.textDim}}>
+                <span>0</span><span style={{color:vPct>=tPct?C.green:C.amber,fontWeight:600}}>{vPct>=tPct?"▲":"▼"} {Math.abs(vPct-tPct).toFixed(0)}% vs target</span><span>{max}{unit}</span>
+              </div>
+            </Card>
+          );
+        };
+
+        return (
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:10}}>
+              {[
+                ["Revenue MTD","AED 6.7M","vs AED 5.0M target",C.green,"📈"],
+                ["Revenue vs LY","+"+revVsLY+"%","YoY growth",C.teal,"🚀"],
+                ["Gross Profit","AED 2.68M",gpPct+"% GP margin",C.gold,"💰"],
+                ["Active Quotes","14","4 expiring this week",C.blue,"📝"],
+                ["Win Rate","68%","vs 60% target",C.green,"🎯"],
+                ["Avg Order Size","AED 84K","Top: Emaar AED 220K",C.purple,"💎"],
+              ].map(([l,v,s,col,ic])=>(
+                <Card key={l} style={{padding:"12px 14px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                    <div style={{fontSize:9,color:C.textMuted,textTransform:"uppercase",letterSpacing:0.6,fontWeight:600,lineHeight:1.4}}>{l}</div>
+                    <span style={{fontSize:16}}>{ic}</span>
+                  </div>
+                  <div style={{fontSize:18,fontWeight:800,color:col,fontFamily:"'DM Serif Display',serif",lineHeight:1.2,marginBottom:3}}>{v}</div>
+                  <div style={{fontSize:10,color:C.textDim}}>{s}</div>
+                </Card>
+              ))}
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
+              <BulletChart label="Revenue vs Target" value={revVsTarget} target={110} max={150} unit="%" color={+revVsTarget>=110?C.green:C.amber} note={"Target increase = 110%"}/>
+              <BulletChart label="GP Margin vs Target" value={+gpPct} target={38} max={60} unit="%" color={+gpPct>=38?C.green:C.amber} note={"GP target = 38%"}/>
+              <BulletChart label="Quote Conversion" value={68} target={60} max={100} unit="%" color={C.green} note={"Target conversion = 60%"}/>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:14}}>
+              <Card>
+                <div style={{fontSize:13,fontWeight:700,color:C.text,marginBottom:4}}>Revenue vs Target Trend (9 months)</div>
+                <div style={{fontSize:11,color:C.textMuted,marginBottom:12}}>Total Revenue = AED {fmt(totalRev*1000000)} · GP = AED {fmt(totalGP*1000000)}</div>
+                <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} style={{width:"100%",overflow:"visible"}}>
+                  <defs>
+                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={C.gold} stopOpacity="0.3"/>
+                      <stop offset="100%" stopColor={C.gold} stopOpacity="0.02"/>
+                    </linearGradient>
+                    <linearGradient id="gpGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={C.green} stopOpacity="0.25"/>
+                      <stop offset="100%" stopColor={C.green} stopOpacity="0.02"/>
+                    </linearGradient>
+                  </defs>
+                  {[0,1,2,3,4].map(i=>{
+                    const y=py((maxRev/4)*i);
+                    return <line key={i} x1={24} y1={y} x2={SVG_W-24} y2={y} stroke={C.border} strokeWidth={0.5}/>;
+                  })}
+                  <polygon points={areaPoints(revData)} fill="url(#revGrad)"/>
+                  <polygon points={areaPoints(gpData)} fill="url(#gpGrad)"/>
+                  <polyline points={linePoints(tgtData)} fill="none" stroke={C.red} strokeWidth={1.5} strokeDasharray="5,4"/>
+                  <polyline points={linePoints(revData)} fill="none" stroke={C.gold} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points={linePoints(gpData)} fill="none" stroke={C.green} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+                  {revData.map((v,i)=><circle key={i} cx={px(i)} cy={py(v)} r={i===revData.length-1?5:3} fill={C.gold} stroke="#18181b" strokeWidth={1.5}/>)}
+                  {months.map((m,i)=><text key={i} x={px(i)} y={SVG_H} textAnchor="middle" fill={C.textDim} fontSize={9}>{m}</text>)}
+                </svg>
+                <div style={{display:"flex",gap:16,marginTop:6,justifyContent:"center"}}>
+                  {[[C.gold,"Revenue"],[C.green,"Gross Profit"],[C.red+"cc","Target (dashed)"]].map(([c,l])=>(
+                    <div key={l} style={{display:"flex",alignItems:"center",gap:5,fontSize:10,color:C.textMuted}}>
+                      <div style={{width:16,height:2,background:c,borderRadius:1}}/>
+                      {l}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                <Card>
+                  <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:12}}>Revenue by Product Type</div>
+                  {[["Marble",42,C.blue],["Granite",28,C.gold],["Quartzite",18,C.teal],["Limestone",12,C.amber]].map(([l,pct,col])=>(
+                    <div key={l} style={{marginBottom:10}}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:4,fontSize:11}}>
+                        <span style={{color:C.text}}>{l}</span>
+                        <span style={{color:col,fontWeight:700}}>{pct}%</span>
+                      </div>
+                      <div style={{background:C.border,borderRadius:99,height:8,overflow:"hidden"}}>
+                        <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99}}/>
+                      </div>
+                    </div>
+                  ))}
+                </Card>
+                <Card>
+                  <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:10}}>Top Customers MTD</div>
+                  {[["Emaar Properties","AED 220K",C.gold],["Aldar Properties","AED 185K",C.blue],["Damac Interiors","AED 142K",C.green],["Al Futtaim Living","AED 98K",C.purple]].map(([n,v,c],i)=>(
+                    <div key={n} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:i<3?`1px solid ${C.border}22`:"none"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <div style={{width:22,height:22,borderRadius:6,background:c+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:c}}>{i+1}</div>
+                        <span style={{fontSize:11,color:C.text}}>{n.split(" ")[0]}</span>
+                      </div>
+                      <span style={{fontSize:12,fontWeight:700,color:c}}>{v}</span>
+                    </div>
+                  ))}
+                </Card>
+              </div>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
+              <Card>
+                <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:12}}>Quote Pipeline</div>
+                {[["Draft",3,C.textMuted],["Sent",5,C.blue],["Viewed",3,C.amber],["Accepted",3,C.green]].map(([s,n,c])=>(
+                  <div key={s} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",borderBottom:`1px solid ${C.border}22`}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:c}}/>
+                      <span style={{fontSize:12,color:C.text}}>{s}</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <div style={{width:80,background:C.border,borderRadius:99,height:5,overflow:"hidden"}}><div style={{width:`${(n/14)*100}%`,height:"100%",background:c,borderRadius:99}}/></div>
+                      <span style={{fontSize:12,fontWeight:700,color:c,width:16,textAlign:"right"}}>{n}</span>
+                    </div>
+                  </div>
+                ))}
+              </Card>
+              <Card>
+                <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:12}}>Revenue by Region</div>
+                {[["Dubai",58,C.gold],["Abu Dhabi",22,C.blue],["Sharjah",12,C.green],["Oman + Qatar",8,C.purple]].map(([r,pct,col])=>(
+                  <div key={r} style={{marginBottom:9}}>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:3}}>
+                      <span style={{color:C.text}}>{r}</span><span style={{color:col,fontWeight:700}}>{pct}%</span>
+                    </div>
+                    <div style={{background:C.border,borderRadius:99,height:6,overflow:"hidden"}}><div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99}}/></div>
+                  </div>
+                ))}
+              </Card>
+              <Card style={{background:"linear-gradient(160deg,#0e1200,#18181b)",border:`1px solid ${C.goldDim}`}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.gold,marginBottom:12}}>⚡ Sales Actions</div>
+                {[["4 quotes expiring in 7 days",C.amber,"Follow up now"],["Statuario Marble — stock low",C.red,"Create PO"],["Emaar Tower A quote accepted",C.green,"Convert to order"],["Aldar Q2 tender open",C.blue,"Prepare proposal"]].map(([t,c,a])=>(
+                  <div key={t} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",borderBottom:`1px solid ${C.border}22`}}>
+                    <div style={{display:"flex",alignItems:"center",gap:7}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:c,flexShrink:0}}/>
+                      <span style={{fontSize:11,color:C.text,lineHeight:1.3}}>{t}</span>
+                    </div>
+                    <Btn size="sm" variant="ghost" style={{fontSize:9,padding:"3px 7px",whiteSpace:"nowrap"}}>{a}</Btn>
+                  </div>
+                ))}
+              </Card>
+            </div>
+          </div>
+        );
+      })()}
 
       {tab==="quote" && (
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
