@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
 /* ═══════════════════════════════════════════════════════════════
    X MARBLES TRADING LLC — Operations Platform v2.1
@@ -771,7 +771,7 @@ function Inventory() {
 
   const doScan = () => {
     const f = INVENTORY.find(i=>i.bc===scanInput.trim()||i.id===scanInput.trim()||i.bnd===scanInput.trim());
-    f ? (setScanned(f),setScanMsg("")) : (setScanMsg("Not found. Try: XM-2401-004 · SL-004 · BND-0461"),setScanned(null));
+    if (f) { setScanned(f); setScanMsg(""); } else { setScanMsg("Not found. Try: XM-2401-004 · SL-004 · BND-0461"); setScanned(null); }
   };
 
   const inv = INVENTORY.filter(i=>(yf==="ALL"||i.yard===yf)&&(sf==="All"||i.status===sf));
